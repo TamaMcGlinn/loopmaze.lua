@@ -137,6 +137,30 @@ function getBorders( cell )
   return borders
 end
 
+function safeForward()
+  if turtle.forward() == false then
+    turtle.refuel(64)
+    turtle.dig()
+    turtle.forward()
+  end
+end
+
+function safeUp()
+  if turtle.up() == false then
+    turtle.refuel(64)
+    turtle.digUp()
+    turtle.up()
+  end
+end
+
+function safeDown()
+  if turtle.down() == false then
+    turtle.refuel(64)
+    turtle.digDown()
+    turtle.down()
+  end
+end
+
 start = {}
 start[1] = math.random(xCells-2)*2 + 2
 start[2] = math.random(yCells-2)*2 + 2
@@ -161,11 +185,11 @@ end
 world[2][1] = 0
 world[xSize-1][ySize] = 0
 
-while turtle.forward() == false do turtle.refuel(64) end
+safeForward()
 
 function refill(x,y,z)
   for i=z,2 do
-    while turtle.up() == false do turtle.refuel(64) end
+    safeUp()
   end
   if x%2 == 1 then
     turtle.turnLeft()
@@ -173,28 +197,28 @@ function refill(x,y,z)
     turtle.turnRight()
   end
   for i=1,x-1 do
-    while turtle.forward() == false do turtle.refuel(64) end
+    safeForward()
   end
   turtle.turnLeft()
   for i=1,y do
-    while turtle.forward() == false do turtle.refuel(64) end
+    safeForward()
   end
-  while turtle.down() == false do turtle.refuel(64) end
-  while turtle.down() == false do turtle.refuel(64) end
+  safeDown()
+  safeDown()
   for i=1,16 do
     turtle.select(i)
     turtle.suckDown()
   end
-  while turtle.up() == false do turtle.refuel(64) end
-  while turtle.up() == false do turtle.refuel(64) end
+  safeUp()
+  safeUp()
   turtle.turnLeft()
   turtle.turnLeft()
   for i=1,y do
-    while turtle.forward() == false do turtle.refuel(64) end
+    safeForward()
   end
   turtle.turnRight()
   for i=1,x-1 do
-    while turtle.forward() == false do turtle.refuel(64) end
+    safeForward()
   end
   if x%2 == 1 then
     turtle.turnLeft()
@@ -202,7 +226,7 @@ function refill(x,y,z)
     turtle.turnRight()
   end
   for i=z,2 do
-    while turtle.down() == false do turtle.refuel(64) end
+    safeDown()
   end
 end
 
@@ -216,7 +240,9 @@ function safePlace(x,y,z)
       turtle.select(1)
     end
   end
-  while turtle.placeDown() == false do end
+  while turtle.placeDown() == false do 
+    turtle.digDown()
+  end
 end
 
 z=1
@@ -232,29 +258,29 @@ for x=1,xSize do
   for y=yStart,yEnd,yStep do
     safePlace(x,y,z)
     if world[x][y] == 1 then
-      while turtle.up() == false do turtle.refuel(64) end
+      safeUp()
       z=2
       safePlace(x,y,z)
-      while turtle.up() == false do turtle.refuel(64) end
+      safeUp()
       z=3
       safePlace(x,y,z)
     end
     if y == yEnd then
       if x%2 == 1 then
 	turtle.turnRight()
-	while turtle.forward() == false do turtle.refuel(64) end
+	safeForward()
 	turtle.turnRight()
       else
 	turtle.turnLeft()
-	while turtle.forward() == false do turtle.refuel(64) end
+	safeForward()
 	turtle.turnLeft()
       end
     else
-      while turtle.forward() == false do turtle.refuel(64) end
+      safeForward()
     end
     if world[x][y] == 1 then
-      while turtle.down() == false do turtle.refuel(64) end
-      while turtle.down() == false do turtle.refuel(64) end
+      safeDown()
+      safeDown()
       z=1
     end
   end
