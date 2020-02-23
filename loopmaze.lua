@@ -15,6 +15,8 @@ for x=1,xSize do
 end
 cellStack = {}
 
+desiredBlockName = ""
+
 function dfs(neighbourfunction, start)
   local currentCel = start
   world[currentCel[1]][currentCel[2]] = 0
@@ -161,6 +163,86 @@ function safeDown()
   end
 end
 
+function selectBlocksToPlace()
+  for i=1,16 do
+    local selection = turtle.getItemDetail(i)
+    if selection ~= nil and selection.name == desiredBlockName and selection.count > 0 then
+      turtle.select(i)
+      return true
+    end
+  end
+  return false
+end
+
+function refill(x,y,z)
+  for i=z,2 do
+    safeUp()
+  end
+  if x%2 == 1 then
+    turtle.turnLeft()
+  else
+    turtle.turnRight()
+  end
+  for i=1,x-1 do
+    safeForward()
+  end
+  turtle.turnLeft()
+  for i=1,y do
+    safeForward()
+  end
+  safeDown()
+  safeDown()
+  repeat
+    for i=1,16 do
+      turtle.select(i)
+      turtle.suckDown()
+    end
+  until( selectBlocksToPlace() )
+  safeUp()
+  safeUp()
+  turtle.turnLeft()
+  turtle.turnLeft()
+  for i=1,y do
+    safeForward()
+  end
+  turtle.turnRight()
+  for i=1,x-1 do
+    safeForward()
+  end
+  if x%2 == 1 then
+    turtle.turnLeft()
+  else
+    turtle.turnRight()
+  end
+  for i=z,2 do
+    safeDown()
+  end
+end
+
+function safePlace(x,y,z)
+  for i=1,16 do
+    local selection = turtle.getItemDetail(i)
+    if selection ~= nil and selection.name == desiredBlockName and selection.count > 0 then
+      turtle.select(i)
+      break
+    elseif i == 16 then
+      refill(x,y,z)
+    end
+  end
+  if turtle.placeDown() == false then
+    turtle.digDown()
+    turtle.placeDown()
+  end
+end
+
+for i=1,16 do
+  turtle.select(i)
+  turtle.suckDown()
+end
+local data = turtle.getItemDetail(1)
+desiredBlockName=data.name
+print("Will require " .. desiredBlockName)
+
 start = {}
 start[1] = math.random(xCells-2)*2 + 2
 start[2] = math.random(yCells-2)*2 + 2
@@ -187,64 +269,6 @@ world[xSize-1][ySize] = 0
 
 safeForward()
 
-function refill(x,y,z)
-  for i=z,2 do
-    safeUp()
-  end
-  if x%2 == 1 then
-    turtle.turnLeft()
-  else
-    turtle.turnRight()
-  end
-  for i=1,x-1 do
-    safeForward()
-  end
-  turtle.turnLeft()
-  for i=1,y do
-    safeForward()
-  end
-  safeDown()
-  safeDown()
-  for i=1,16 do
-    turtle.select(i)
-    turtle.suckDown()
-  end
-  safeUp()
-  safeUp()
-  turtle.turnLeft()
-  turtle.turnLeft()
-  for i=1,y do
-    safeForward()
-  end
-  turtle.turnRight()
-  for i=1,x-1 do
-    safeForward()
-  end
-  if x%2 == 1 then
-    turtle.turnLeft()
-  else
-    turtle.turnRight()
-  end
-  for i=z,2 do
-    safeDown()
-  end
-end
-
-function safePlace(x,y,z)
-  for i=1,16 do
-    if turtle.getItemCount(i) > 0 then
-      turtle.select(i)
-      break
-    elseif i == 16 then
-      refill(x,y,z)
-      turtle.select(1)
-    end
-  end
-  while turtle.placeDown() == false do 
-    turtle.digDown()
-  end
-end
-
 z=1
 for x=1,xSize do
   yStart = 1
@@ -267,15 +291,16 @@ for x=1,xSize do
     end
     if y == yEnd then
       if x%2 == 1 then
-	turtle.turnRight()
-	safeForward()
-	turtle.turnRight()
+	      turtle.turnRight()
+	      safeForward()
+	      turtle.turnRight()
       else
-	turtle.turnLeft()
-	safeForward()
-	turtle.turnLeft()
+	      turtle.turnLeft()
+	      safeForward()
+	      turtle.turnLeft()
       end
     else
+      turtle.digUp()
       safeForward()
     end
     if world[x][y] == 1 then
